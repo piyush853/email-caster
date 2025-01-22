@@ -30,7 +30,8 @@ def redirect_to_custom_domain():
     
     # Redirect if the host is not your custom domain
     if request.host != custom_domain:
-        return redirect(f"https://{custom_domain}{request.path}", code=301)
+        # Redirect to the custom domain and preserve the request path and query string
+        return redirect(f"https://{custom_domain}{request.full_path}", code=301)
 @app.route('/')
 def home():
     user_email = session.get('user_email')
