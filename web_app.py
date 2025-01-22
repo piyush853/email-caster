@@ -21,7 +21,8 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "default-secret-key")  # Use
 openai.api_key = os.environ.get("OPENAI_API_KEY")  # Use environment variable for API key
 
 # Enable CORS for Chrome extension
-CORS(app)
+CORS(app, resources={r"/*": {"origins": ["*"], "methods": ["GET", "POST", "OPTIONS"], "allow_headers": ["Content-Type"]}})
+
 
 
 @app.route('/')
@@ -32,12 +33,7 @@ def home():
 @app.route('/suggest', methods=['OPTIONS','GET', 'POST'])
 def suggest():
     
-    if request.method == 'OPTIONS':
-        response = jsonify({"message": "Preflight request successful"})
-        response.headers.add("Access-Control-Allow-Origin", "*")
-        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
-        response.headers.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        return response
+    
     user_email = session.get('user_email')
     suggested_subject = None
     suggested_body = None
