@@ -37,7 +37,7 @@ def suggest():
         response.headers.add("Access-Control-Allow-Origin", "*")
         response.headers.add("Access-Control-Allow-Headers", "Content-Type")
         response.headers.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        return responseuggestions for both website and Chrome extension."""
+        return response
     user_email = session.get('user_email')
     suggested_subject = None
     suggested_body = None
