@@ -30,7 +30,7 @@ def home():
     user_email = session.get('user_email')
     return render_template('index.html', user_email=user_email)
 
-@app.route('/suggest', methods=['OPTIONS','GET', 'POST'])
+@app.route('/suggest', methods=['GET', 'POST'])
 def suggest():
     
     
