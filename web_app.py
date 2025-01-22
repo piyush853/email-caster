@@ -23,15 +23,7 @@ openai.api_key = os.environ.get("OPENAI_API_KEY")  # Use environment variable fo
 # Enable CORS for Chrome extension
 CORS(app)
 
-@app.before_request
-def redirect_to_custom_domain():
-    # Define your custom domain
-    custom_domain = "emailcaster.com"
-    
-    # Redirect if the host is not your custom domain
-    if request.host != custom_domain:
-        # Redirect to the custom domain and preserve the request path and query string
-        return redirect(f"https://{custom_domain}{request.full_path}", code=301)
+
 @app.route('/')
 def home():
     user_email = session.get('user_email')
