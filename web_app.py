@@ -29,14 +29,20 @@ def home():
     user_email = session.get('user_email')
     return render_template('index.html', user_email=user_email)
 
-@app.route('/suggest', methods=['GET', 'POST'])
+@app.route('/suggest', methods=['OPTIONS','GET', 'POST'])
 def suggest():
-    """Handles suggestions for both website and Chrome extension."""
+    
+    if request.method == 'OPTIONS':
+        response = jsonify({"message": "Preflight request successful"})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        response.headers.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        return responseuggestions for both website and Chrome extension."""
     user_email = session.get('user_email')
     suggested_subject = None
     suggested_body = None
     error_message = None
-
+    
     if request.method == 'POST':
         # Check content type to differentiate between form submission and JSON request
         if request.content_type == "application/json":
