@@ -3,7 +3,6 @@ import openai
 from flask_cors import CORS
 import firebase_admin
 from firebase_admin import credentials, auth
-
 import os
 from dotenv import load_dotenv
 
@@ -21,9 +20,7 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "default-secret-key")  # Use
 openai.api_key = os.environ.get("OPENAI_API_KEY")  # Use environment variable for API key
 
 # Enable CORS for Chrome extension
-
-
-
+CORS(app)
 
 @app.route('/')
 def home():
@@ -32,13 +29,12 @@ def home():
 
 @app.route('/suggest', methods=['GET', 'POST'])
 def suggest():
-    
-    
+    """Handles suggestions for both website and Chrome extension."""
     user_email = session.get('user_email')
     suggested_subject = None
     suggested_body = None
     error_message = None
-    
+
     if request.method == 'POST':
         # Check content type to differentiate between form submission and JSON request
         if request.content_type == "application/json":
