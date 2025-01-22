@@ -22,9 +22,6 @@ openai.api_key = os.environ.get("OPENAI_API_KEY")  # Use environment variable fo
 
 # Enable CORS for Chrome extension
 CORS(app)
-from flask import Flask, redirect, request
-
-app = Flask(__name__)
 
 @app.before_request
 def redirect_to_custom_domain():
