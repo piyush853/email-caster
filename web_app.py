@@ -21,7 +21,7 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "default-secret-key")  # Use
 openai.api_key = os.environ.get("OPENAI_API_KEY")  # Use environment variable for API key
 
 # Enable CORS for Chrome extension
-CORS(app, resources={r"/*": {"origins": ["*"], "methods": ["GET", "POST", "OPTIONS"], "allow_headers": ["Content-Type"]}})
+
 
 
 
