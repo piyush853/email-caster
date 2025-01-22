@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suggest Email Format</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .content-container {
+            min-height: calc(100vh - 96px); /* Full page height minus header/footer */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        .result-container {
+            max-width: 100%;
+            min-height: 200px; /* Ensure consistent height for small bodies */
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            background-color: #fff;
+            overflow-y: auto; /* Allow scrolling for long bodies */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .result-container::-webkit-scrollbar-thumb {
+            background: #a78bfa;
+            border-radius: 4px;
+        }
+
+        .output-section {
+            min-height: 300px; /* Fix height for consistent layout */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            display: none; /* Hidden by default */
+        }
+
+        .loading-text {
+            font-size: 1.5rem;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-purple-50 text-gray-900">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-text">Generating...</div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-purple-700 text-white py-6 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Email Caster Logo" class="h-10">
+                <h1 class="text-3xl font-bold">Email Caster</h1>
+            </div>
+            <nav>
+                <ul class="flex space-x-8 text-lg font-medium">
+                    <li><a href="{{ url_for('home') }}" class="hover:underline">Home</a></li>
+                    {% if user_email %}
+                        <li>
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-white text-purple-700 rounded-full h-10 w-10 flex items-center justify-center font-bold">
+                                    {{ user_email[0] | upper }}
+                                </div>
+                                <a href="{{ url_for('logout') }}" class="hover:text-gray-300">Logout</a>
+                            </div>
+                        </li>
+                    {% else %}
+                        <li><a href="{{ url_for('login') }}" class="hover:text-gray-300">Login</a></li>
+                        <li><a href="{{ url_for('signup') }}" class="hover:text-gray-300">Signup</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="content-container">
+        <section class="text-center w-full max-w-3xl">
+            <h2 class="text-4xl font-bold text-purple-800 mb-6">Suggest Email Format</h2>
+            <form id="emailForm" method="POST" class="bg-white p-8 rounded-lg shadow-md">
+                <input type="text" name="subject" id="subjectInput" placeholder="Enter email subject..."
+                    class="w-full p-4 border border-purple-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    required>
+                <button type="submit"
+                    class="w-full bg-purple-600 text-white py-3 px-4 mt-4 rounded-md shadow-md hover:bg-purple-700 transition-colors">
+                    Suggest Format
+                </button>
+            </form>
+        </section>
+
+        <section class="output-section w-full max-w-3xl mt-8 bg-white p-8 rounded-lg shadow-md">
+            {% if generated_subject %}
+                <div class="mb-6">
+                    <h3 class="text-2xl font-bold text-purple-700 mb-4">Generated Subject:</h3>
+                    <p class="text-lg text-gray-800">{{ generated_subject }}</p>
+                </div>
+            {% endif %}
+
+            {% if suggested_body %}
+                <div class="result-container relative">
+                    <h3 class="text-2xl font-bold text-purple-700 mb-4">Suggested Email Body:</h3>
+                    <!-- Copy Button -->
+                    <button id="copyButton" class="absolute top-4 right-4 bg-gray-200 p-2 rounded-full shadow hover:bg-gray-300 transition-colors">
+                        <span id="copyIcon" class="material-icons">content_copy</span>
+                    </button>
+                    <!-- Email Body Content -->
+                    <div id="emailBody" class="text-gray-800 text-lg">
+                        {{ suggested_body|safe }}
+                    </div>
+                </div>
+            {% elif error_message %}
+                <div class="bg-red-100 p-4 rounded-lg shadow-md">
+                    <p class="text-red-600 font-semibold">{{ error_message }}</p>
+                </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-purple-700 text-white py-12">
+        <div class="container mx-auto text-center">
+            <p class="text-lg mb-4">&copy; 2025 Email Caster. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const emailForm = document.getElementById('emailForm');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+
+            emailForm.addEventListener('submit', () => {
+                // Show the loading overlay
+                loadingOverlay.style.display = 'flex';
+            });
+
+            const copyButton = document.getElementById('copyButton');
+            const copyIcon = document.getElementById('copyIcon');
+            const emailBody = document.getElementById('emailBody');
+
+            if (copyButton && copyIcon && emailBody) {
+                copyButton.addEventListener('click', () => {
+                    const textToCopy = emailBody.innerText;
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        copyIcon.textContent = 'check';
+                        setTimeout(() => {
+                            copyIcon.textContent = 'content_copy';
+                        }, 2000);
+                    }).catch((err) => {
+                        console.error('Failed to copy text: ', err);
+                    });
+                });
+            }
+        });
+    </script>
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Caster</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #6C63FF 0%, #A78BFA 100%);
+        }
+        .shadow-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body class="bg-purple-50 text-gray-900">
+    <!-- Header -->
+    <header class="bg-purple-700 text-white py-6 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Email Caster Logo" class="h-10">
+                <h1 class="text-3xl font-bold">Email Caster</h1>
+            </div>
+            <nav>
+                <ul class="flex space-x-8 text-lg font-medium">
+                    {% if user_email %}
+                        <li>
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-white text-purple-700 rounded-full h-10 w-10 flex items-center justify-center font-bold">
+                                    {{ user_email[0] | upper }}
+                                </div>
+                                <a href="{{ url_for('logout') }}" class="hover:text-gray-300">Logout</a>
+                            </div>
+                        </li>
+                    {% else %}
+                        <li><a href="{{ url_for('login') }}" class="hover:text-gray-300">Login</a></li>
+                        <li><a href="{{ url_for('signup') }}" class="hover:text-gray-300">Signup</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="gradient-bg text-white text-center py-20">
+        <div class="container mx-auto">
+            <h2 class="text-5xl font-bold mb-4">Welcome to Email Caster</h2>
+            <p class="text-xl mb-8">Streamline your email creation with smart suggestions and prebuilt formats.</p>
+            <a href="{{ url_for('suggest') }}" class="bg-white text-purple-700 px-8 py-3 rounded-full text-lg font-semibold shadow-lg hover:bg-gray-200">
+                Get Started
+            </a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="mt-16">
+        <h3 class="text-4xl font-semibold text-center text-purple-800 mb-10">Our Features</h3>
+        <div class="container mx-auto grid md:grid-cols-3 gap-8 px-4">
+            <!-- Feature 1 -->
+            <div class="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow shadow-card">
+                <img src="https://img.icons8.com/ios-filled/100/5b21b6/email.png" alt="Smart Suggestions" class="mx-auto mb-4">
+                <h4 class="text-xl font-bold text-purple-700">Smart Suggestions</h4>
+                <p class="mt-2 text-gray-600">Receive tailored email subject and body suggestions for your needs.</p>
+            </div>
+            <!-- Feature 2 -->
+            <div class="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow shadow-card">
+                <img src="https://img.icons8.com/ios-filled/100/5b21b6/easy.png" alt="Easy to Use" class="mx-auto mb-4">
+                <h4 class="text-xl font-bold text-purple-700">Easy to Use</h4>
+                <p class="mt-2 text-gray-600">An intuitive, user-friendly interface that simplifies email creation.</p>
+            </div>
+            <!-- Feature 3 -->
+            <div class="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow shadow-card">
+                <img src="https://img.icons8.com/ios-filled/100/5b21b6/time.png" alt="Time Saver" class="mx-auto mb-4">
+                <h4 class="text-xl font-bold text-purple-700">Time Saver</h4>
+                <p class="mt-2 text-gray-600">Save time with prebuilt email templates for various scenarios.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-purple-700 text-white py-12 mt-16">
+        <div class="container mx-auto text-center">
+            <p class="text-lg mb-4">&copy; 2025 Email Caster. All Rights Reserved.</p>
+            <div class="flex justify-center space-x-6">
+                <a href="#" class="hover:underline">Privacy Policy</a>
+                <a href="#" class="hover:underline">Terms of Service</a>
+                <a href="#" class="hover:underline">Contact Us</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
+
