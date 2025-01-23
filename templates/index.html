@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Email Caster - AI-powered email format generator. Streamline your email creation process with smart suggestions and professional templates. Get started for free!">
-    
+
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='logo-16.png') }}">
     <title>Email Caster</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.lordicon.com/xdjxvujz.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
@@ -17,73 +18,230 @@
             background: linear-gradient(135deg, #6C63FF 0%, #A78BFA 100%);
         }
         .shadow-card:hover {
-            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(108, 99, 255, 0.3); /* Purple Glow */
+            transform: translateY(-10px) scale(1.02);
+            transition: all 0.3s ease-in-out;
         }
+          /* Keyframe animation for fade-in */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Keyframe animation for slide-up */
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Animation classes */
+    .animate-fade-in {
+        animation: fadeIn 1.5s ease-in-out;
+    }
+
+    .animate-slide-up {
+        animation: slideUp 1.5s ease-in-out;
+    }
+
+    /* Custom gradient background enhancement */
+    .gradient-bg {
+        background: linear-gradient(135deg, #6C63FF 0%, #A78BFA 50%, #FFD700 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Add sparkle or floating effect */
+    .floating-icon {
+        animation: floating 4s ease-in-out infinite;
+    }
+
+    @keyframes floating {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-15px);
+        }
+    }
     </style>
 </head>
 <body class="bg-purple-50 text-gray-900">
     <!-- Header -->
-    <header class="bg-purple-700 text-white py-6 shadow-lg">
-        <div class="container mx-auto flex justify-between items-center">
+    <header class="bg-gradient-to-r from-purple-700 to-purple-800 text-white py-6 shadow-lg fixed top-0 w-full z-50">
+        <div class="container mx-auto flex justify-between items-center px-4">
+            <!-- Logo and Title -->
             <div class="flex items-center space-x-4">
-                <img src="{{ url_for('static', filename='logo.png') }}" alt="Email Caster Logo" class="h-10">
-                <h1 class="text-3xl font-bold">Email Caster</h1>
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Email Caster Logo"
+                     class="h-12 hover:scale-110 transition-transform duration-300">
+                <h1 class="text-3xl font-bold hover:text-yellow-300 transition-colors duration-300">Email Caster</h1>
             </div>
-            <nav>
+
+            <!-- Navigation Menu -->
+            <nav class="hidden md:flex items-center space-x-6">
                 <ul class="flex space-x-8 text-lg font-medium">
+                    <!-- Download Extension Button -->
+                    <li>
+                        <a href="https://chrome.google.com/webstore/detail/email-caster/extension-id"
+                           target="_blank"
+                           class="flex items-center bg-white text-purple-700 px-4 py-2 rounded-md text-sm font-semibold shadow-md hover:bg-gray-200 hover:scale-105 transition-transform duration-300">
+                            <!-- Icon -->
+                            <img src="{{ url_for('static', filename='extension-icon.png') }}" alt="Extension Icon"
+                                 class="h-5 w-5 mr-2">
+                            Download Extension
+                        </a>
+                    </li>
                     {% if user_email %}
                         <li>
                             <div class="flex items-center space-x-3">
-                                <div class="bg-white text-purple-700 rounded-full h-10 w-10 flex items-center justify-center font-bold">
+                                <div class="bg-white text-purple-700 rounded-full h-10 w-10 flex items-center justify-center font-bold hover:scale-110 transition-transform duration-300">
                                     {{ user_email[0] | upper }}
                                 </div>
-                                <a href="{{ url_for('logout') }}" class="hover:text-gray-300">Logout</a>
+                                <a href="{{ url_for('logout') }}" class="hover:text-yellow-300 transition-colors duration-300">Logout</a>
                             </div>
                         </li>
                     {% else %}
-                        <li><a href="{{ url_for('login') }}" class="hover:text-gray-300">Login</a></li>
-                        <li><a href="{{ url_for('signup') }}" class="hover:text-gray-300">Signup</a></li>
+                        <li><a href="{{ url_for('login') }}" class="hover:text-yellow-300 transition-colors duration-300">Login</a></li>
+                        <li><a href="{{ url_for('signup') }}" class="hover:text-yellow-300 transition-colors duration-300">Signup</a></li>
                     {% endif %}
                 </ul>
             </nav>
+
+            <!-- Mobile Menu -->
+            <div class="md:hidden">
+                <button id="menuToggle" class="text-white focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-8 w-8">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <script>
+            const menuToggle = document.getElementById('menuToggle');
+            const mobileMenu = document.getElementById('mobileMenu');
+
+            menuToggle.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        </script>
+
+        <div id="mobileMenu" class="hidden bg-purple-800 text-white md:hidden">
+            <ul class="flex flex-col items-center space-y-4 py-4 text-lg">
+                <li><a href="{{ url_for('login') }}" class="hover:text-yellow-300 transition-colors duration-300">Login</a></li>
+                <li><a href="{{ url_for('signup') }}" class="hover:text-yellow-300 transition-colors duration-300">Signup</a></li>
+                <li>
+                    <a href="https://chrome.google.com/webstore/detail/email-caster/extension-id" target="_blank"
+                       class="flex items-center bg-white text-purple-700 px-4 py-2 rounded-md text-sm font-semibold shadow-md hover:bg-gray-200 hover:scale-105 transition-transform duration-300">
+                        <img src="{{ url_for('static', filename='extension-icon.png') }}" alt="Extension Icon" class="h-5 w-5 mr-2">
+                        Download Extension
+                    </a>
+                </li>
+            </ul>
         </div>
     </header>
 
+
+
     <!-- Hero Section -->
-    <section class="gradient-bg text-white text-center py-20">
-        <div class="container mx-auto">
-            <h2 class="text-5xl font-bold mb-4">Welcome to Email Caster</h2>
-            <p class="text-xl mb-8">Streamline your email creation with smart suggestions and prebuilt formats.</p>
-            <a href="{{ url_for('suggest') }}" class="bg-white text-purple-700 px-8 py-3 rounded-full text-lg font-semibold shadow-lg hover:bg-gray-200">
+    <section class="gradient-bg text-white text-center py-20 mt-24 relative overflow-hidden">
+        <div class="container mx-auto relative z-10">
+            <h2 class="text-5xl font-bold mb-4 animate-fade-in">Welcome to <span class="text-yellow-300">Email Caster</span></h2>
+            <p class="text-xl mb-8 animate-slide-up">Streamline your email creation with smart suggestions and prebuilt formats.</p>
+            <a href="{{ url_for('suggest') }}"
+               class="bg-white text-purple-700 px-8 py-3 rounded-full text-lg font-semibold shadow-lg hover:bg-gray-200 hover:scale-105 transform transition-all duration-300">
                 Get Started
             </a>
         </div>
+
+        <!-- Floating animated icons -->
+        <div class="absolute top-10 left-10">
+            <lord-icon
+                src="https://cdn.lordicon.com/lupuorrc.json"
+                trigger="loop"
+                delay="2s"
+                colors="primary:#ffffff,secondary:#ffd700"
+                style="width:80px;height:80px">
+            </lord-icon>
+        </div>
+        <div class="absolute bottom-16 right-16">
+            <lord-icon
+                src= "https://cdn.lordicon.com/ozlkyfxg.json"
+                state="loop-spin"
+                trigger="loop"
+                delay="3s"
+                colors="primary:#ffffff,secondary:#ffd700"
+                style="width:100px;height:100px">
+            </lord-icon>
+        </div>
     </section>
+
 
     <!-- Features Section -->
     <section class="mt-16">
-        <h3 class="text-4xl font-semibold text-center text-purple-800 mb-10">Our Features</h3>
-        <div class="container mx-auto grid md:grid-cols-3 gap-8 px-4">
-            <!-- Feature 1 -->
-            <div class="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow shadow-card">
-                <img src="https://img.icons8.com/ios-filled/100/5b21b6/email.png" alt="Smart Suggestions" class="mx-auto mb-4">
-                <h4 class="text-xl font-bold text-purple-700">Smart Suggestions</h4>
-                <p class="mt-2 text-gray-600">Receive tailored email subject and body suggestions for your needs.</p>
+    <h3 class="text-4xl font-semibold text-center text-purple-800 mb-10">Our Features</h3>
+    <div class="container mx-auto grid md:grid-cols-3 gap-8 px-4">
+        <!-- Feature 1 -->
+        <div class="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow shadow-card">
+            <div class="flex items-center justify-center mb-4">
+                <lord-icon
+                    src="https://cdn.lordicon.com/fjvfsqea.json"
+                    trigger="hover"
+                    colors="primary:#8930e8,secondary:#a866ee"
+                    style="width:80px;height:80px">
+                </lord-icon>
             </div>
-            <!-- Feature 2 -->
-            <div class="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow shadow-card">
-                <img src="https://img.icons8.com/ios-filled/100/5b21b6/easy.png" alt="Easy to Use" class="mx-auto mb-4">
-                <h4 class="text-xl font-bold text-purple-700">Easy to Use</h4>
-                <p class="mt-2 text-gray-600">An intuitive, user-friendly interface that simplifies email creation.</p>
-            </div>
-            <!-- Feature 3 -->
-            <div class="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow shadow-card">
-                <img src="https://img.icons8.com/ios-filled/100/5b21b6/time.png" alt="Time Saver" class="mx-auto mb-4">
-                <h4 class="text-xl font-bold text-purple-700">Time Saver</h4>
-                <p class="mt-2 text-gray-600">Save time with prebuilt email templates for various scenarios.</p>
-            </div>
+            <h4 class="text-xl font-bold text-purple-700 text-center">Smart Suggestions</h4>
+            <p class="text-center text-gray-600 mt-2">
+                Receive tailored email subject and body suggestions for your needs.
+            </p>
         </div>
+        <!-- Feature 2 -->
+        <div class="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow shadow-card">
+            <div class="flex items-center justify-center mb-4">
+                <lord-icon
+                    src="https://cdn.lordicon.com/jectmwqf.json"
+                    trigger="hover"
+                    state="hover-squeeze"
+                    colors="primary:#121331,secondary:#a866ee"
+                    style="width:80px;height:80px">
+                </lord-icon>
+            </div>
+            <h4 class="text-xl font-bold text-purple-700 text-center">Easy to Use</h4>
+            <p class="text-center text-gray-600 mt-2">
+                An intuitive, user-friendly interface that simplifies email creation.
+            </p>
+        </div>
+        <!-- Feature 3 -->
+        <div class="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow shadow-card">
+            <div class="flex items-center justify-center mb-4">
+                <lord-icon
+                    src="https://cdn.lordicon.com/warimioc.json"
+                    trigger="hover"
+                    colors="primary:#121331,secondary:#a866ee"
+                    style="width:80px;height:80px">
+                </lord-icon>
+            </div>
+            <h4 class="text-xl font-bold text-purple-700 text-center">Time Saver</h4>
+            <p class="text-center text-gray-600 mt-2">
+                Save time with prebuilt email templates for various scenarios.
+            </p>
+        </div>
+      </div>
     </section>
+    <div class="my-16"></div>
 
     <!-- Chrome Extension Section -->
     <section class="bg-purple-100 py-16">
@@ -98,6 +256,7 @@
                 Add to Chrome
             </a>
         </div>
+
     </section>
 
     <!-- Footer -->
