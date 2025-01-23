@@ -3,6 +3,7 @@ import openai
 from flask_cors import CORS
 import firebase_admin
 from firebase_admin import credentials, auth
+import requests
 import os
 from dotenv import load_dotenv
 
@@ -18,6 +19,8 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "default-secret-key")  # Use
 
 # Configure OpenAI API Key
 openai.api_key = os.environ.get("OPENAI_API_KEY")  # Use environment variable for API key
+
+FIREBASE_API_KEY = os.environ.get("FIREBASE_KEY")
 
 # Enable CORS for Chrome extension
 CORS(app)
@@ -102,27 +105,50 @@ def suggest():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-
-        """Handles user login using Firebase Authentication."""
-        if request.method == 'POST':
+    """Handles user login and password reset."""
+    if request.method == 'POST':
+        if 'reset_password' in request.form:
+            # Handle forgot password
             email = request.form.get('email')
-            password = request.form.get('password')  # Firebase Admin SDK doesn't handle passwords directly.
+            if not email:
+                flash("Please provide an email address to reset your password.", "danger")
+            else:
+                try:
+                    # Send password reset email using Firebase Authentication REST API
+                    reset_password_url = f"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={FIREBASE_API_KEY}"
+                    data = {
+                        "requestType": "PASSWORD_RESET",
+                        "email": email,
+                    }
+                    response = requests.post(reset_password_url, json=data)
+                    response_data = response.json()
 
-            try:
-                # Verify the user's email using Firebase Admin SDK
-                user = auth.get_user_by_email(email)
+                    if response.status_code == 200:
+                        flash("Password reset email sent successfully. Please check your inbox.", "success")
+                    else:
+                        error_message = response_data.get("error", {}).get("message", "An error occurred.")
+                        flash(f"Failed to send password reset email: {error_message}", "danger")
+                except Exception as e:
+                    flash(f"An unexpected error occurred: {e}", "danger")
+            return redirect(url_for('login'))
 
-                # Simulate password verification (Firebase Admin SDK cannot verify passwords directly)
-                # This is a placeholder, implement actual password authentication with Firebase Authentication REST API.
-                session['user_email'] = user.email
-                flash("Login successful!", "success")
-                return redirect(url_for('home'))
-            except auth.UserNotFoundError:
-                flash("User not found. Please check your email or sign up.", "danger")
-            except Exception as e:
-                flash(f"An unexpected error occurred: {e}", "danger")
-        return render_template('login.html')
+        # Handle login
+        email = request.form.get('email')
+        password = request.form.get('password')
 
+        try:
+            # Simulate user login (Firebase Admin SDK doesn't handle passwords directly)
+            user = auth.get_user_by_email(email)
+            # Placeholder: Use Firebase REST API to verify the password (implement this in production)
+            session['user_email'] = user.email
+            flash("Login successful!", "success")
+            return redirect(url_for('home'))
+        except auth.UserNotFoundError:
+            flash("User not found. Please check your email or sign up.", "danger")
+        except Exception as e:
+            flash(f"An unexpected error occurred: {e}", "danger")
+
+    return render_template('login.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
