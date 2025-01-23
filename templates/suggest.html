@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Email Caster - AI-powered email format generator. Streamline your email creation process with smart suggestions and professional templates. Get started for free!">
-    
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='logo-16.png') }}">
     <title>Suggest Email Format</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,43 +12,6 @@
         body {
             font-family: 'Poppins', sans-serif;
         }
-
-        .content-container {
-            min-height: calc(100vh - 96px); /* Full page height minus header/footer */
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            padding: 2rem 1rem;
-        }
-
-        .result-container {
-            max-width: 100%;
-            min-height: 200px; /* Ensure consistent height for small bodies */
-            padding: 1.5rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            background-color: #fff;
-            overflow-y: auto; /* Allow scrolling for long bodies */
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .result-container::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .result-container::-webkit-scrollbar-thumb {
-            background: #a78bfa;
-            border-radius: 4px;
-        }
-
-        .output-section {
-            min-height: 300px; /* Fix height for consistent layout */
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-        }
-
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -63,7 +25,6 @@
             z-index: 50;
             display: none; /* Hidden by default */
         }
-
         .loading-text {
             font-size: 1.5rem;
             color: white;
@@ -71,17 +32,17 @@
         }
     </style>
 </head>
-<body class="bg-purple-50 text-gray-900">
+<body class="bg-gradient-to-br from-purple-50 to-purple-100 text-gray-900">
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-text">Generating...</div>
+        <div class="loading-text animate-pulse">Generating...</div>
     </div>
 
     <!-- Header -->
     <header class="bg-purple-700 text-white py-6 shadow-lg">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center space-x-4">
-                <img src="{{ url_for('static', filename='logo.png') }}" alt="Email Caster Logo" class="h-10">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Email Caster Logo" class="h-12">
                 <h1 class="text-3xl font-bold">Email Caster</h1>
             </div>
             <nav>
@@ -106,42 +67,43 @@
     </header>
 
     <!-- Main Content -->
-    <main class="content-container">
-        <section class="text-center w-full max-w-3xl">
+    <main class="container mx-auto mt-8 px-4">
+        <section class="text-center w-full max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-lg">
             <h2 class="text-4xl font-bold text-purple-800 mb-6">Suggest Email Format</h2>
-            <form id="emailForm" method="POST" class="bg-white p-8 rounded-lg shadow-md">
+            <p class="text-lg text-gray-600 mb-6">Type your email subject below, and we'll generate a professional email for you!</p>
+            <form id="emailForm" method="POST" class="space-y-4">
                 <input type="text" name="subject" id="subjectInput" placeholder="Enter email subject..."
-                    class="w-full p-4 border border-purple-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    class="w-full p-4 border border-purple-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-800"
                     required>
                 <button type="submit"
-                    class="w-full bg-purple-600 text-white py-3 px-4 mt-4 rounded-md shadow-md hover:bg-purple-700 transition-colors">
-                    Suggest Format
+                    class="w-full bg-purple-600 text-white py-3 px-4 rounded-md shadow-md hover:bg-purple-700 transition">
+                    Generate Email
                 </button>
             </form>
         </section>
 
-        <section class="output-section w-full max-w-3xl mt-8 bg-white p-8 rounded-lg shadow-md">
+        <section class="w-full max-w-3xl mx-auto mt-8">
             {% if generated_subject %}
-                <div class="mb-6">
+                <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
                     <h3 class="text-2xl font-bold text-purple-700 mb-4">Generated Subject:</h3>
                     <p class="text-lg text-gray-800">{{ generated_subject }}</p>
                 </div>
             {% endif %}
 
             {% if suggested_body %}
-                <div class="result-container relative">
-                    <h3 class="text-2xl font-bold text-purple-700 mb-4">Suggested Email Body:</h3>
-                    <!-- Copy Button -->
-                    <button id="copyButton" class="absolute top-4 right-4 bg-gray-200 p-2 rounded-full shadow hover:bg-gray-300 transition-colors">
-                        <span id="copyIcon" class="material-icons">content_copy</span>
-                    </button>
-                    <!-- Email Body Content -->
-                    <div id="emailBody" class="text-gray-800 text-lg">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-bold text-purple-700">Suggested Email Body:</h3>
+                        <button id="copyButton" class="bg-gray-200 p-2 rounded-full shadow hover:bg-gray-300 transition">
+                            <span id="copyIcon" class="material-icons">content_copy</span>
+                        </button>
+                    </div>
+                    <div id="emailBody" class="text-gray-800 text-lg overflow-auto max-h-60">
                         {{ suggested_body|safe }}
                     </div>
                 </div>
             {% elif error_message %}
-                <div class="bg-red-100 p-4 rounded-lg shadow-md">
+                <div class="bg-red-100 p-4 rounded-lg shadow-lg">
                     <p class="text-red-600 font-semibold">{{ error_message }}</p>
                 </div>
             {% endif %}
@@ -149,9 +111,9 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-purple-700 text-white py-12">
+    <footer class="bg-purple-700 text-white py-6 mt-8">
         <div class="container mx-auto text-center">
-            <p class="text-lg mb-4">&copy; 2025 Email Caster. All Rights Reserved.</p>
+            <p class="text-lg">&copy; 2025 Email Caster. All Rights Reserved.</p>
         </div>
     </footer>
 
@@ -162,7 +124,6 @@
             const loadingOverlay = document.getElementById('loadingOverlay');
 
             emailForm.addEventListener('submit', () => {
-                // Show the loading overlay
                 loadingOverlay.style.display = 'flex';
             });
 
@@ -178,8 +139,8 @@
                         setTimeout(() => {
                             copyIcon.textContent = 'content_copy';
                         }, 2000);
-                    }).catch((err) => {
-                        console.error('Failed to copy text: ', err);
+                    }).catch(err => {
+                        console.error('Failed to copy text:', err);
                     });
                 });
             }
