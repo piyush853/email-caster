@@ -52,36 +52,9 @@
                 transform: translateY(0);
             }
         }
-        .tooltip {
-            position: relative;
-            display: inline-block;
-            cursor: pointer;
-        }
-
-        .tooltip .tooltip-text {
-            visibility: hidden;
-            width: 140px;
-            background-color: black;
-            color: #fff;
-            text-align: center;
-            padding: 5px;
-            border-radius: 4px;
-            position: absolute;
-            z-index: 10;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -70px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .tooltip:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
-        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-purple-50 to-purple-100 text-gray-900 min-h-screen flex flex-col">
+<body class="bg-gradient-to-br from-purple-50 to-purple-100 text-gray-900">
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay">
         <div class="flex flex-col items-center">
@@ -96,72 +69,35 @@
     </div>
 
     <!-- Header -->
-    <header class="bg-gradient-to-r from-purple-700 to-purple-800 text-white py-6 shadow-lg fixed top-0 w-full z-50">
-        <div class="container mx-auto flex justify-between items-center px-4">
-            <!-- Logo and Title -->
+    <header class="bg-gradient-to-r from-purple-700 via-purple-800 to-purple-700 text-white py-6 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center header-animation">
             <div class="flex items-center space-x-4">
-                <img src="{{ url_for('static', filename='logo.png') }}" alt="Email Caster Logo"
-                     class="h-12 hover:scale-110 transition-transform duration-300">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Email Caster Logo" class="h-12 hover:scale-110 transition-transform">
                 <h1 class="text-3xl font-bold hover:text-yellow-300 transition-colors duration-300">Email Caster</h1>
             </div>
-
-            <!-- Navigation Menu -->
-            <nav class="hidden md:flex items-center space-x-6">
+            <nav>
                 <ul class="flex space-x-8 text-lg font-medium">
-                    <li>
-                        <a href="https://chrome.google.com/webstore/detail/email-caster/extension-id"
-                           target="_blank"
-                           class="flex items-center bg-white text-purple-700 px-4 py-2 rounded-md text-sm font-semibold shadow-md hover:bg-gray-200 hover:scale-105 transition-transform duration-300">
-                            <img src="{{ url_for('static', filename='extension-icon.png') }}" alt="Extension Icon"
-                                 class="h-5 w-5 mr-2">
-                            Download Extension
-                        </a>
-                    </li>
+                    <li><a href="{{ url_for('home') }}" class="hover:underline">Home</a></li>
                     {% if user_email %}
-                        <li><a href="{{ url_for('home') }}" class="hover:text-yellow-300 transition-colors duration-300">Home</a></li>
                         <li>
                             <div class="flex items-center space-x-3">
-                                <div class="bg-white text-purple-700 rounded-full h-10 w-10 flex items-center justify-center font-bold hover:scale-110 transition-transform duration-300">
+                                <div class="bg-white text-purple-700 rounded-full h-10 w-10 flex items-center justify-center font-bold">
                                     {{ user_email[0] | upper }}
                                 </div>
-                                <a href="{{ url_for('logout') }}" class="hover:text-yellow-300 transition-colors duration-300">Logout</a>
+                                <a href="{{ url_for('logout') }}" class="hover:text-gray-300">Logout</a>
                             </div>
                         </li>
                     {% else %}
-                        <li><a href="{{ url_for('login') }}" class="hover:text-yellow-300 transition-colors duration-300">Login</a></li>
-                        <li><a href="{{ url_for('signup') }}" class="hover:text-yellow-300 transition-colors duration-300">Signup</a></li>
+                        <li><a href="{{ url_for('login') }}" class="hover:text-gray-300">Login</a></li>
+                        <li><a href="{{ url_for('signup') }}" class="hover:text-gray-300">Signup</a></li>
                     {% endif %}
                 </ul>
             </nav>
-
-            <!-- Mobile Menu -->
-            <div class="md:hidden">
-                <button id="menuToggle" class="text-white focus:outline-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-8 w-8">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-
-        <!-- Mobile Menu Dropdown -->
-        <div id="mobileMenu" class="hidden bg-purple-800 text-white md:hidden">
-            <ul class="flex flex-col items-center space-y-4 py-4 text-lg">
-                <li><a href="{{ url_for('login') }}" class="hover:text-yellow-300 transition-colors duration-300">Login</a></li>
-                <li><a href="{{ url_for('signup') }}" class="hover:text-yellow-300 transition-colors duration-300">Signup</a></li>
-                <li>
-                    <a href="https://chrome.google.com/webstore/detail/email-caster/extension-id" target="_blank"
-                       class="flex items-center bg-white text-purple-700 px-4 py-2 rounded-md text-sm font-semibold shadow-md hover:bg-gray-200 hover:scale-105 transition-transform duration-300">
-                        <img src="{{ url_for('static', filename='extension-icon.png') }}" alt="Extension Icon" class="h-5 w-5 mr-2">
-                        Download Extension
-                    </a>
-                </li>
-            </ul>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="container mx-auto mt-[150px] px-4 flex-grow">
+    <main class="container mx-auto mt-8 px-4">
         <section class="text-center w-full max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-lg">
             <h2 class="text-4xl font-bold text-purple-800 mb-6">Suggest Email Format</h2>
             <p class="text-lg text-gray-600 mb-6">Type your email subject below, and we'll generate a professional email for you!</p>
@@ -177,11 +113,44 @@
                 </button>
             </form>
         </section>
+
+        <section class="w-full max-w-3xl mx-auto mt-8">
+            {% if generated_subject %}
+                <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
+                    <h3 class="text-2xl font-bold text-purple-700 mb-4">Generated Subject:</h3>
+                    <p class="text-lg text-gray-800">{{ generated_subject }}</p>
+                </div>
+            {% endif %}
+
+            {% if suggested_body %}
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-bold text-purple-700">Suggested Email Body:</h3>
+                        <button id="copyButton" class="tooltip bg-gray-200 p-2 rounded-full shadow hover:bg-gray-300 transition">
+                            <lord-icon
+                                src="https://cdn.lordicon.com/mtdulhdc.json"
+                                trigger="hover"
+                                colors="primary:#6c63ff"
+                                style="width:30px;height:30px">
+                            </lord-icon>
+
+                        </button>
+                    </div>
+                    <div id="emailBody" class="text-gray-800 text-lg overflow-auto max-h-60">
+                        {{ suggested_body|safe }}
+                    </div>
+                </div>
+            {% elif error_message %}
+                <div class="bg-red-100 p-4 rounded-lg shadow-lg">
+                    <p class="text-red-600 font-semibold">{{ error_message }}</p>
+                </div>
+            {% endif %}
+        </section>
     </main>
 
     <!-- Footer -->
     <footer class="bg-purple-700 text-white py-6 mt-8">
-        <div class="container mx-auto  text-center">
+        <div class="container mx-auto text-center">
             <p class="text-lg">&copy; 2025 Email Caster. All Rights Reserved.</p>
         </div>
     </footer>
@@ -196,12 +165,22 @@
                 loadingOverlay.style.display = 'flex';
             });
 
-            const menuToggle = document.getElementById('menuToggle');
-            const mobileMenu = document.getElementById('mobileMenu');
+            const copyButton = document.getElementById('copyButton');
+            const emailBody = document.getElementById('emailBody');
 
-            menuToggle.addEventListener('click', () => {
-                mobileMenu.classList.toggle('hidden');
-            });
+            if (copyButton && emailBody) {
+                copyButton.addEventListener('click', () => {
+                    const textToCopy = emailBody.innerText;
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        copyButton.classList.add('bg-green-200');
+                        setTimeout(() => {
+                            copyButton.classList.remove('bg-green-200');
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Failed to copy text:', err);
+                    });
+                });
+            }
         });
     </script>
 </body>
