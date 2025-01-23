@@ -79,6 +79,7 @@
 </head>
 <body class="bg-purple-50 text-gray-900">
     <!-- Header -->
+    
     <header class="bg-gradient-to-r from-purple-700 to-purple-800 text-white py-6 shadow-lg fixed top-0 w-full z-50">
         <div class="container mx-auto flex justify-between items-center px-4">
             <!-- Logo and Title -->
@@ -87,7 +88,7 @@
                      class="h-12 hover:scale-110 transition-transform duration-300">
                 <h1 class="text-3xl font-bold hover:text-yellow-300 transition-colors duration-300">Email Caster</h1>
             </div>
-
+    
             <!-- Navigation Menu -->
             <nav class="hidden md:flex items-center space-x-6">
                 <ul class="flex space-x-8 text-lg font-medium">
@@ -117,7 +118,7 @@
                     {% endif %}
                 </ul>
             </nav>
-
+    
             <!-- Mobile Menu -->
             <div class="md:hidden">
                 <button id="menuToggle" class="text-white focus:outline-none">
@@ -127,17 +128,8 @@
                 </button>
             </div>
         </div>
-
+    
         <!-- Mobile Menu Dropdown -->
-        <script>
-            const menuToggle = document.getElementById('menuToggle');
-            const mobileMenu = document.getElementById('mobileMenu');
-
-            menuToggle.addEventListener('click', () => {
-                mobileMenu.classList.toggle('hidden');
-            });
-        </script>
-
         <div id="mobileMenu" class="hidden bg-purple-800 text-white md:hidden">
             <ul class="flex flex-col items-center space-y-4 py-4 text-lg">
                 <li><a href="{{ url_for('login') }}" class="hover:text-yellow-300 transition-colors duration-300">Login</a></li>
@@ -152,6 +144,18 @@
             </ul>
         </div>
     </header>
+    
+    <!-- JavaScript for the hamburger menu -->
+    <script>
+        const menuToggle = document.getElementById('menuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+    
+        // Toggle the mobile menu when the button is clicked
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
+
 
 
 
