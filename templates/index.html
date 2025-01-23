@@ -248,18 +248,36 @@
     <div class="my-16"></div>
 
     <!-- Chrome Extension Section -->
-    <section class="bg-purple-100 py-16">
-        <div class="container mx-auto text-center">
-            <h3 class="text-4xl font-bold text-purple-800 mb-6">Email Caster Chrome Extension</h3>
-            <p class="text-lg text-gray-700 mb-8">Enhance your Gmail experience with our AI-powered Chrome extension. Generate email content seamlessly while composing in Gmail.</p>
-            <div class="flex justify-center">
-                <img src="{{ url_for('static', filename='action.png') }}" alt="Email Caster Chrome Extension" class="max-w-md shadow-lg rounded-lg">
-            </div>
-            <a href="https://chrome.google.com/webstore/detail/email-caster/extension-id" target="_blank"
-               class="mt-8 inline-block bg-purple-600 text-white px-6 py-3 rounded-md text-lg font-semibold shadow-md hover:bg-purple-700">
-                Add to Chrome
-            </a>
+        <!-- Chrome Extension Section -->
+<section class="bg-gradient-to-r from-purple-100 via-purple-200 to-purple-100 py-16 relative overflow-hidden">
+    <div class="container mx-auto text-center relative z-10">
+        <!-- Section Title -->
+        <h3 class="text-4xl font-bold text-purple-800 mb-6 animate-fade-in">Get the <span class="text-purple-600">Email Caster</span> Chrome Extension</h3>
+        <p class="text-lg text-gray-700 mb-8 animate-slide-up">Enhance your Gmail experience with our AI-powered Chrome extension. Generate email content seamlessly while composing in Gmail.</p>
+
+        <!-- Floating Icon Animation -->
+        <div class="absolute bottom-10 right-10">
+            <lord-icon
+                src="https://cdn.lordicon.com/ebvizisb.json"
+                trigger="hover"
+                
+                colors="primary:#6C63FF,secondary:#FFD700"
+                style="width:100px;height:100px">
+            </lord-icon>
         </div>
+
+        <!-- Image Preview -->
+        <div class="flex justify-center mb-8">
+            <img src="{{ url_for('static', filename='action.png') }}" alt="Email Caster Chrome Extension" class="max-w-md shadow-lg rounded-lg transform hover:scale-105 transition-transform duration-300">
+        </div>
+
+        <!-- Add to Chrome Button -->
+        <a href="https://chrome.google.com/webstore/detail/email-caster/extension-id" target="_blank"
+           class="mt-8 inline-block bg-purple-600 text-white px-6 py-3 rounded-md text-lg font-semibold shadow-md hover:bg-purple-700 hover:scale-105 transform transition-all duration-300">
+            Add to Chrome
+        </a>
+    </div>
+
 
     </section>
 
