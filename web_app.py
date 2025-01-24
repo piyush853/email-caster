@@ -59,7 +59,7 @@ def suggest():
                         {"role": "system",
                          "content": "You are an AI that generates professional emails in HTML format."},
                         {"role": "user",
-                         "content": f"Generate a professional email for the subject: {subject}"}
+                         "content": f"Generate a professional email for the subject: {subject}. Use proper HTML formatting and don't show ''' html and return only the email content without additional text or instructions"}
                     ],
                     max_tokens=500,
                     temperature=0.7
