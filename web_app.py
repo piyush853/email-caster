@@ -27,12 +27,15 @@ CORS(app)
 
 @app.route('/')
 def home():
+
     user_email = session.get('user_email')
+
     return render_template('index.html', user_email=user_email)
+
+
 
 @app.route('/suggest', methods=['GET', 'POST'])
 def suggest():
-   
     user_email = session.get('user_email')
     suggested_subject = None
     suggested_body = None
@@ -54,12 +57,12 @@ def suggest():
         else:
             try:
                 response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo-16k",
+                    model="gpt-4o-mini",
                     messages=[
                         {"role": "system",
                          "content": "You are an AI that generates professional emails in HTML format."},
                         {"role": "user",
-                         "content": f"Generate a professional email for the subject: {subject}. Use proper HTML formatting and don't show ''' html and return only the email content without additional text or instructions"}
+                         "content": f"Generate a professional email for the subject: {subject}.User proper HTML formatting and don't show '''html and return only the email content without additional text or instruction and don't alter the html css formating of page."}
                     ],
                     max_tokens=500,
                     temperature=0.7
@@ -76,6 +79,7 @@ def suggest():
                 error_message = f"Failed to fetch email format: {str(e)}"
                 if request.content_type == "application/json":
                     return jsonify({"error": error_message}), 500
+
 
     # Render the suggest.html template for website users
     return render_template(
