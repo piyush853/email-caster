@@ -164,7 +164,7 @@
         <div class="container mx-auto relative z-10">
             <h2 class="text-5xl font-bold mb-4 animate-fade-in">Welcome to <span class="text-yellow-300">Email Caster</span></h2>
             <p class="text-xl mb-8 animate-slide-up">Streamline your email creation with smart suggestions and prebuilt formats.</p>
-            <a href="{{ url_for('suggest') }}"
+            <a href="{{ url_for('login') if not user_email else url_for('suggest') }}"
                class="bg-white text-purple-700 px-8 py-3 rounded-full text-lg font-semibold shadow-lg hover:bg-gray-200 hover:scale-105 transform transition-all duration-300">
                 Get Started
             </a>
