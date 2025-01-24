@@ -32,25 +32,18 @@ def home():
 
 @app.route('/suggest', methods=['GET', 'POST'])
 def suggest():
-    """Ensure user is authenticated before accessing the Get Started feature."""
-    if 'user_email' not in session:
-        # Flash a message to inform the user
-        flash("You must log in to access this feature.", "danger")
-        return redirect(url_for('login'))  # Redirect to the login page
-    """Handles suggestions for both website and Chrome extension."""
     user_email = session.get('user_email')
     suggested_subject = None
     suggested_body = None
     error_message = None
 
     if request.method == 'POST':
-        # Check content type to differentiate between form submission and JSON request
+        # Check if the request is from the Chrome extension (application/json)
         if request.content_type == "application/json":
-            # JSON request from Chrome extension
             data = request.get_json()
             subject = data.get("subject")
         else:
-            # Form-encoded request from the website
+            # Default form request for the website
             subject = request.form.get('subject')
 
         if not subject:
@@ -59,42 +52,27 @@ def suggest():
                 return jsonify({"error": error_message}), 400
         else:
             try:
-                # Call OpenAI API to generate both subject and body
                 response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo-16k",  # Use "gpt-4" or "gpt-3.5-turbo"
+                    model="gpt-3.5-turbo-16k",
                     messages=[
                         {"role": "system",
-                         "content": "You are an AI assistant that generates professional emails in HTML format."},
+                         "content": "You are an AI that generates professional emails in HTML format."},
                         {"role": "user",
-                         "content": f"Generate a professional email for the subject: {subject}. Use proper HTML formatting and don't show ''' html  and return only the email content without additional text or instructions."}
+                         "content": f"Generate a professional email for the subject: {subject}"}
                     ],
                     max_tokens=500,
                     temperature=0.7
                 )
-
-                # Extract the content from the response
                 gpt_response = response.choices[0].message["content"]
 
-                # Split the response into subject and body
-                if "Subject:" in gpt_response:
-                    parts = gpt_response.split("Subject:", 1)
-                    suggested_subject = parts[1].split("\n", 1)[0].strip()
-                    suggested_body = parts[1].split("\n", 1)[1].strip()
-                else:
-                    # Fallback if the response does not include a clear "Subject:"
-                    suggested_subject = f"Re: {subject}"  # Default subject if not parsed
-                    suggested_body = gpt_response.strip()
+                suggested_subject = f"Re: {subject}"  # Default subject
+                suggested_body = gpt_response.strip()
 
-                # Return JSON if the request is from the Chrome extension
+                # Return JSON response for API requests
                 if request.content_type == "application/json":
                     return jsonify({"suggested_subject": suggested_subject, "suggested_body": suggested_body}), 200
-
-            except openai.error.OpenAIError as e:
-                error_message = f"Failed to fetch email format: {str(e)}"
-                if request.content_type == "application/json":
-                    return jsonify({"error": error_message}), 500
             except Exception as e:
-                error_message = f"Unexpected error: {str(e)}"
+                error_message = f"Failed to fetch email format: {str(e)}"
                 if request.content_type == "application/json":
                     return jsonify({"error": error_message}), 500
 
@@ -106,6 +84,7 @@ def suggest():
         suggested_body=suggested_body,
         error_message=error_message
     )
+
 
 
 @app.route('/login', methods=['GET', 'POST'])
