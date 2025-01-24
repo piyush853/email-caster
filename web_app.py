@@ -32,6 +32,11 @@ def home():
 
 @app.route('/suggest', methods=['GET', 'POST'])
 def suggest():
+    """Ensure user is authenticated before accessing the Get Started feature."""
+    if 'user_email' not in session:
+        # Flash a message to inform the user
+        flash("You must log in to access this feature.", "danger")
+        return redirect(url_for('login'))  # Redirect to the login page
     user_email = session.get('user_email')
     suggested_subject = None
     suggested_body = None
