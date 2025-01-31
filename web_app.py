@@ -193,7 +193,7 @@ def login():
             # Placeholder: Use Firebase REST API to verify the password (implement this in production)
             session['user_email'] = user.email
             flash("Login successful!", "success")
-            return redirect(url_for('home'))
+            return redirect(url_for('suggest'))
         except auth.UserNotFoundError:
             flash("User not found. Please check your email or sign up.", "danger")
         except Exception as e:
