@@ -214,20 +214,35 @@ def resend_verification():
         # ✅ Get Firebase user by email
         user = auth.get_user_by_email(email)
 
-        # ✅ Use Firebase REST API to send verification email
-        verification_url = f"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={FIREBASE_API_KEY}"
+        # ✅ Use Firebase REST API to get ID token (temporary login to resend verification)
+        login_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
         data = {
-            "requestType": "VERIFY_EMAIL",
-            "idToken": user.uid,  # Use Firebase UID instead of logging in
+            "email": email,
+            "password": session.get('unverified_password', ''),  # Store password temporarily for login
+            "returnSecureToken": True,
         }
-        response = requests.post(verification_url, json=data)
+        response = requests.post(login_url, json=data)
         response_data = response.json()
 
-        if response.status_code == 200:
-            flash("Verification email resent. Please check your inbox.", "info")
+        if "idToken" in response_data:
+            id_token = response_data["idToken"]
+
+            # ✅ Send verification email
+            verification_url = f"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={FIREBASE_API_KEY}"
+            verification_data = {
+                "requestType": "VERIFY_EMAIL",
+                "idToken": id_token,  # Use ID token for authentication
+            }
+            verification_response = requests.post(verification_url, json=verification_data)
+            verification_result = verification_response.json()
+
+            if verification_response.status_code == 200:
+                flash("Verification email resent. Please check your inbox.", "info")
+            else:
+                error_message = verification_result.get("error", {}).get("message", "An error occurred.")
+                flash(f"Failed to resend verification email: {error_message}", "danger")
         else:
-            error_message = response_data.get("error", {}).get("message", "An error occurred.")
-            flash(f"Failed to resend verification email: {error_message}", "danger")
+            flash("Error logging in to resend verification email. Please try again.", "danger")
 
     except firebase_admin.auth.UserNotFoundError:
         flash("User not found. Please sign up again.", "danger")
