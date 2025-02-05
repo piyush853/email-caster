@@ -24,7 +24,7 @@
 
         <h1 class="text-3xl font-bold text-purple-700 mt-4">Verify Your Email</h1>
         <p class="text-lg text-gray-600 text-center mt-2">
-            We have sent a verification link to <strong>{{ email }}</strong>. <br>
+            We have sent a verification link to <strong>{{ session.get('unverified_email', 'your email') }}</strong>. <br>
             Please check your inbox and verify your email before logging in.
         </p>
 
