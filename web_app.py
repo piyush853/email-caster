@@ -211,38 +211,28 @@ def resend_verification():
         return redirect(url_for('signup'))
 
     try:
-        # ✅ Get Firebase user by email
+        # ✅ Ensure the user exists in Firebase
         user = auth.get_user_by_email(email)
 
-        # ✅ Use Firebase REST API to get ID token (temporary login to resend verification)
-        login_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
-        data = {
-            "email": email,
-            "password": session.get('unverified_password', ''),  # Store password temporarily for login
-            "returnSecureToken": True,
+        # ✅ Ensure the user is NOT already verified
+        if user.email_verified:
+            flash("Your email is already verified. You can log in now.", "info")
+            return redirect(url_for('login'))
+
+        # ✅ Send the verification email using Firebase REST API
+        verification_url = f"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={FIREBASE_API_KEY}"
+        verification_data = {
+            "requestType": "VERIFY_EMAIL",
+            "email": email  # Use email instead of an ID token
         }
-        response = requests.post(login_url, json=data)
-        response_data = response.json()
+        verification_response = requests.post(verification_url, json=verification_data)
+        verification_result = verification_response.json()
 
-        if "idToken" in response_data:
-            id_token = response_data["idToken"]
-
-            # ✅ Send verification email
-            verification_url = f"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={FIREBASE_API_KEY}"
-            verification_data = {
-                "requestType": "VERIFY_EMAIL",
-                "idToken": id_token,  # Use ID token for authentication
-            }
-            verification_response = requests.post(verification_url, json=verification_data)
-            verification_result = verification_response.json()
-
-            if verification_response.status_code == 200:
-                flash("Verification email resent. Please check your inbox.", "info")
-            else:
-                error_message = verification_result.get("error", {}).get("message", "An error occurred.")
-                flash(f"Failed to resend verification email: {error_message}", "danger")
+        if verification_response.status_code == 200:
+            flash("Verification email resent. Please check your inbox.", "info")
         else:
-            flash("Error logging in to resend verification email. Please try again.", "danger")
+            error_message = verification_result.get("error", {}).get("message", "An error occurred.")
+            flash(f"Failed to resend verification email: {error_message}", "danger")
 
     except firebase_admin.auth.UserNotFoundError:
         flash("User not found. Please sign up again.", "danger")
@@ -251,6 +241,7 @@ def resend_verification():
         flash(f"Error resending verification email: {e}", "danger")
 
     return redirect(url_for('verify_prompt'))
+
 
 
 @app.route('/logout')
