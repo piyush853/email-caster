@@ -7,7 +7,6 @@ import requests
 import os
 from dotenv import load_dotenv
 
-
 # Load environment variables
 load_dotenv()
 # Initialize Firebase Admin SDK
@@ -24,6 +23,8 @@ FIREBASE_API_KEY = os.environ.get("FIREBASE_KEY")
 
 # Enable CORS for Chrome extension
 CORS(app)
+
+
 def send_verification_email(user_id_token):
     """Send email verification link using Firebase Authentication REST API"""
     try:
@@ -32,6 +33,7 @@ def send_verification_email(user_id_token):
             "requestType": "VERIFY_EMAIL",
             "idToken": user_id_token,
         }
+        print(data)
         response = requests.post(verification_url, json=data)
         if response.status_code == 200:
             return True
@@ -42,13 +44,13 @@ def send_verification_email(user_id_token):
     except Exception as e:
         flash(f"Error sending verification email: {e}", "danger")
         return False
+
+
 @app.route('/')
 def home():
-
     user_email = session.get('user_email')
 
     return render_template('index.html', user_email=user_email)
-
 
 
 @app.route('/suggest', methods=['GET', 'POST'])
@@ -97,7 +99,6 @@ def suggest():
                 if request.content_type == "application/json":
                     return jsonify({"error": error_message}), 500
 
-
     # Render the suggest.html template for website users
     return render_template(
         'suggest.html',
@@ -118,6 +119,9 @@ def signup():
         try:
             # Create user in Firebase
             user = auth.create_user(email=email, password=password)
+
+            # ✅ Store email in session so it can be accessed later
+            session['unverified_email'] = email
 
             # Use Firebase REST API to get ID token
             login_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
@@ -146,101 +150,200 @@ def signup():
     return render_template('signup.html')
 
 
+
 @app.route('/verify_prompt')
 def verify_prompt():
     """Renders a prompt asking users to verify their email."""
     return render_template('verify_prompt.html')
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    """Handles user login and password reset."""
-    if request.method == 'POST':
-        if 'reset_password' in request.form:
-            # Handle forgot password
-            email = request.form.get('email')
-            if not email:
-                flash("Please provide an email address to reset your password.", "danger")
-            else:
-                try:
-                    # Send password reset email using Firebase Authentication REST API
-                    reset_password_url = f"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={FIREBASE_API_KEY}"
-                    data = {
-                        "requestType": "PASSWORD_RESET",
-                        "email": email,
-                    }
-                    response = requests.post(reset_password_url, json=data)
-                    response_data = response.json()
-
-                    if response.status_code == 200:
-                        flash("Password reset email sent successfully. Please check your inbox.", "success")
-                    else:
-                        error_message = response_data.get("error", {}).get("message", "An error occurred.")
-                        flash(f"Failed to send password reset email: {error_message}", "danger")
-                except Exception as e:
-                    flash(f"An unexpected error occurred: {e}", "danger")
-
-            return redirect(url_for('login'))
-
-        # Handle login
-        email = request.form.get('email')
-        password = request.form.get('password')
-
-        try:
-            # Simulate user login (Firebase Admin SDK doesn't handle passwords directly)
-            user = auth.get_user_by_email(email)
-            if not user.email_verified:
-                flash("Please verify your email before logging in.", "warning")
-                return redirect(url_for('verify_prompt'))
-            # Placeholder: Use Firebase REST API to verify the password (implement this in production)
-            session['user_email'] = user.email
-            flash("Login successful!", "success")
-            return redirect(url_for('suggest'))
-        except auth.UserNotFoundError:
-            flash("User not found. Please check your email or sign up.", "danger")
-        except Exception as e:
-            flash(f"An unexpected error occurred: {e}", "danger")
-
-    return render_template('login.html')
 
 @app.route('/resend_verification', methods=['POST'])
 def resend_verification():
-    """Resend verification email upon request."""
-    
+    """Resend verification email using Firebase UID (No password required)."""
+
     email = session.get('unverified_email')  # ✅ Retrieve email from session
+    print(f"Debug: Retrieved email from session -> {email}")
+
     if not email:
         flash("No email found. Please sign up again.", "danger")
         return redirect(url_for('signup'))
 
     try:
-        # ✅ Ensure the user exists in Firebase
+        # ✅ Get user details from Firebase
         user = auth.get_user_by_email(email)
+        print(f"Debug: User found -> {user.email}, Email Verified: {user.email_verified}, UID: {user.uid}")
 
-        # ✅ Ensure the user is NOT already verified
+        # ✅ Check if email is already verified
         if user.email_verified:
             flash("Your email is already verified. You can log in now.", "info")
             return redirect(url_for('login'))
 
-        # ✅ Send the verification email using Firebase REST API
-        verification_url = f"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={FIREBASE_API_KEY}"
-        verification_data = {
-            "requestType": "VERIFY_EMAIL",
-            "email": email  # Use email instead of an ID token
+        # ✅ Use Firebase UID to authenticate the user via Identity Provider (IDP)
+        idp_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key={FIREBASE_API_KEY}"
+        idp_data = {
+            "postBody": f"idToken={user.uid}",  # UID used as a parameter
+            "requestUri": "http://127.0.0.1:5000/",  # This can be any valid URI
+            "returnSecureToken": True,
         }
-        verification_response = requests.post(verification_url, json=verification_data)
-        verification_result = verification_response.json()
+        idp_response = requests.post(idp_url, json=idp_data)
+        idp_result = idp_response.json()
+        print(f"Debug: IDP API Response -> {idp_result}")
 
-        if verification_response.status_code == 200:
-            flash("Verification email resent. Please check your inbox.", "info")
+        if "idToken" in idp_result:
+            id_token = idp_result["idToken"]
+
+            # ✅ Send the verification email using Firebase REST API
+            verification_url = f"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={FIREBASE_API_KEY}"
+            verification_data = {
+                "requestType": "VERIFY_EMAIL",
+                "idToken": id_token  # ✅ Use ID token from Identity Provider response
+            }
+            verification_response = requests.post(verification_url, json=verification_data)
+            verification_result = verification_response.json()
+            print(f"Debug: Verification API Response -> {verification_result}")
+
+            if verification_response.status_code == 200:
+                flash("Verification email resent. Please check your inbox.", "info")
+            else:
+                error_message = verification_result.get("error", {}).get("message", "An error occurred.")
+                flash(f"Failed to resend verification email: {error_message}", "danger")
+
         else:
-            error_message = verification_result.get("error", {}).get("message", "An error occurred.")
-            flash(f"Failed to resend verification email: {error_message}", "danger")
+            error_message = idp_result.get("error", {}).get("message", "Failed to authenticate user via IDP.")
+            flash(f"Error retrieving ID token: {error_message}", "danger")
 
     except firebase_admin.auth.UserNotFoundError:
         flash("User not found. Please sign up again.", "danger")
         return redirect(url_for('signup'))
     except Exception as e:
         flash(f"Error resending verification email: {e}", "danger")
+        print(f"Debug: Unexpected error -> {str(e)}")  # Debug unexpected error
 
     return redirect(url_for('verify_prompt'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = "None"
+    """Handles user login via Email/Password and Google Sign-in."""
+    firebase_config = {
+        "apiKey": FIREBASE_API_KEY,
+        "authDomain": os.environ.get("FIREBASE_AUTH_DOMAIN"),
+        "projectId": os.environ.get("FIREBASE_PROJECT_ID"),
+        "storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET"),
+        "messagingSenderId": os.environ.get("FIREBASE_MESSAGING_SENDER_ID"),
+        "appId": os.environ.get("FIREBASE_APP_ID"),
+        "measurementId": os.environ.get("FIREBASE_MEASUREMENT_ID"),
+    }
+    firebase_config = {k: v for k, v in firebase_config.items() if v is not None}
+    if not all(firebase_config.values()):
+        print("⚠️ Missing Firebase Config:", firebase_config)
+    if request.method == 'POST':
+
+        # ✅ Handle Password Reset
+        if 'reset_password' in request.form:
+            email = request.form.get('email')
+            if not email:
+                return render_template("login.html", error="Please provide an email address to reset your password.")
+
+            try:
+                reset_password_url = f"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={FIREBASE_API_KEY}"
+                data = {"requestType": "PASSWORD_RESET", "email": email}
+                response = requests.post(reset_password_url, json=data)
+
+                if response.status_code == 200:
+                    return render_template("login.html", message="Password reset email sent successfully.")
+                else:
+                    return render_template("login.html", error="Error sending reset email.")
+            except Exception as e:
+                return render_template("login.html", error=f"Unexpected error: {e}")
+
+        # ✅ Handle Email/Password Login
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        if email and password:
+            try:
+                login_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
+                login_data = {"email": email, "password": password, "returnSecureToken": True}
+                response = requests.post(login_url, json=login_data)
+                login_result = response.json()
+
+                if "idToken" in login_result:
+                    user = auth.get_user_by_email(email)
+
+
+                    if not user.email_verified:
+                        return redirect(url_for('verify_prompt'))
+
+                    session['user_email'] = email
+                    return redirect(url_for('suggest'))
+                else:
+                    flash("Error")
+
+
+
+
+            except firebase_admin.auth.UserNotFoundError:
+                return render_template("login.html", error="User not found. Please sign up first.")
+            except Exception as e:
+                flash("Wrong Email/Password")
+                return render_template("login.html", error=f"Unexpected error: {e}")
+
+
+        # ✅ Handle Google Login
+        google_id_token = request.form.get("google_id_token")
+
+        if google_id_token:
+            try:
+                google_auth_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key={FIREBASE_API_KEY}"
+                google_auth_data = {
+                    "postBody": f"id_token={google_id_token}&providerId=google.com",
+                    "requestUri": "http://127.0.0.1:5000/suggest",
+                    "returnSecureToken": True
+                }
+                google_response = requests.post(google_auth_url, json=google_auth_data)
+                google_result = google_response.json()
+
+                if "email" in google_result:
+                    session['user_email'] = google_result['email']
+                    return redirect(url_for('suggest'))
+                else:
+                    return render_template("login.html", error="Google Login failed.")
+
+            except Exception as e:
+                return render_template("login.html", error=f"Google Authentication Error: {e}")
+
+
+    return render_template("login.html",firebase_config=firebase_config)
+
+
+@app.route('/google_login', methods=['POST'])
+def google_login():
+    """Handles Google login using Firebase Authentication."""
+    try:
+        data = request.get_json()
+        id_token = data.get('idToken')
+
+        # ✅ Verify Google ID token with Firebase
+        decoded_token = auth.verify_id_token(id_token)
+        email = decoded_token['email']
+
+        # ✅ Get Firebase User by Email
+        user = auth.get_user_by_email(email)
+
+        # ✅ Check if user exists, otherwise create a new user
+        if not user:
+            user = auth.create_user(email=email)
+
+        # ✅ Store email in session
+        session['user_email'] = email
+
+        return jsonify({"success": True}), 200
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+
+
 
 
 
@@ -248,7 +351,6 @@ def resend_verification():
 def logout():
     """Logs out the user."""
     session.pop('user_email', None)
-    flash("You have been logged out.", "info")
     return redirect(url_for('home'))
 
 
