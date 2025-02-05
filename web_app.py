@@ -204,31 +204,34 @@ def login():
 @app.route('/resend_verification', methods=['POST'])
 def resend_verification():
     """Resend verification email upon request."""
-    email = session.get('unverified_email')
+    
+    email = session.get('unverified_email')  # ✅ Retrieve email from session
     if not email:
         flash("No email found. Please sign up again.", "danger")
         return redirect(url_for('signup'))
 
     try:
+        # ✅ Get Firebase user by email
         user = auth.get_user_by_email(email)
 
-        # Use Firebase REST API to get ID token
-        login_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
+        # ✅ Use Firebase REST API to send verification email
+        verification_url = f"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={FIREBASE_API_KEY}"
         data = {
-            "email": email,
-            "password": "dummy_password",  # Firebase requires a password, use an actual one in production
-            "returnSecureToken": True,
+            "requestType": "VERIFY_EMAIL",
+            "idToken": user.uid,  # Use Firebase UID instead of logging in
         }
-        response = requests.post(login_url, json=data)
+        response = requests.post(verification_url, json=data)
         response_data = response.json()
 
-        if "idToken" in response_data:
-            id_token = response_data["idToken"]
-            send_verification_email(id_token)
+        if response.status_code == 200:
             flash("Verification email resent. Please check your inbox.", "info")
         else:
-            flash("Error resending verification email. Please try again.", "danger")
+            error_message = response_data.get("error", {}).get("message", "An error occurred.")
+            flash(f"Failed to resend verification email: {error_message}", "danger")
 
+    except firebase_admin.auth.UserNotFoundError:
+        flash("User not found. Please sign up again.", "danger")
+        return redirect(url_for('signup'))
     except Exception as e:
         flash(f"Error resending verification email: {e}", "danger")
 
