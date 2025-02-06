@@ -185,8 +185,6 @@
     <script>
         var firebaseConfig = JSON.parse('{{ firebase_config | tojson | safe }}');
 
-        console.log("Firebase Config Loaded:", firebaseConfig);
-
         // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
