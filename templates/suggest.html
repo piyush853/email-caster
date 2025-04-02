@@ -13,7 +13,13 @@
         body {
             font-family: 'Poppins', sans-serif;
         }
-
+        .inline-placeholder {
+            border-bottom: 1px solid #ccc;
+            font-size: 1rem;
+            background-color: #f9f9f9;
+            min-width: 80px;
+            display: inline-block;
+        }
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -247,30 +253,52 @@
     <!-- JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const emailForm = document.getElementById('emailForm');
-            const loadingOverlay = document.getElementById('loadingOverlay');
+    const emailForm = document.getElementById('emailForm');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const copyButton = document.getElementById('copyButton');
+    const emailBody = document.getElementById('emailBody');
 
-            emailForm.addEventListener('submit', () => {
-                loadingOverlay.style.display = 'flex';
-            });
+    // Show loading animation on form submit
+    emailForm.addEventListener('submit', () => {
+        loadingOverlay.style.display = 'flex';
+    });
 
-            const copyButton = document.getElementById('copyButton');
-            const emailBody = document.getElementById('emailBody');
-
-            if (copyButton && emailBody) {
-                copyButton.addEventListener('click', () => {
-                    const textToCopy = emailBody.innerText;
-                    navigator.clipboard.writeText(textToCopy).then(() => {
-                        copyButton.classList.add('bg-green-200');
-                        setTimeout(() => {
-                            copyButton.classList.remove('bg-green-200');
-                        }, 2000);
-                    }).catch(err => {
-                        console.error('Failed to copy text:', err);
-                    });
-                });
-            }
+    // Replace [Placeholders] with input fields
+    function renderEditableEmail(container) {
+        const placeholderRegex = /\[([^\]]+)\]/g;
+        const rawHtml = container.innerHTML;
+        const editableHtml = rawHtml.replace(placeholderRegex, (_, placeholderText) => {
+            return `<input type="text" value="${placeholderText}" class="inline-placeholder border-b border-gray-300 px-1 mx-1 bg-transparent text-gray-800 font-medium focus:outline-none" />`;
         });
+        container.innerHTML = editableHtml;
+    }
+
+    if (emailBody) {
+        renderEditableEmail(emailBody);
+    }
+
+    // Copy text (with input values) to clipboard
+    if (copyButton && emailBody) {
+        copyButton.addEventListener('click', () => {
+            const cloned = emailBody.cloneNode(true);
+            const inputs = cloned.querySelectorAll('input');
+            inputs.forEach(input => {
+                const textNode = document.createTextNode(input.value);
+                input.replaceWith(textNode);
+            });
+            const plainText = cloned.innerText;
+
+            navigator.clipboard.writeText(plainText).then(() => {
+                copyButton.classList.add('bg-green-200');
+                setTimeout(() => {
+                    copyButton.classList.remove('bg-green-200');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text:', err);
+            });
+        });
+    }
+});
     </script>
 </body>
 </html>
